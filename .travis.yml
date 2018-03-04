@@ -19,7 +19,7 @@ deploy:
   site: at-st-web-api
   slot: at-st-web-api-staging
   on:
-    branch: release
+    branch: master
 notifications:
   email:
     on_success: never
