@@ -20,7 +20,6 @@ deploy:
   slot: at-st-web-api-staging
   on:
     branch: release
-    condition: type = push
 notifications:
   email:
     on_success: never
