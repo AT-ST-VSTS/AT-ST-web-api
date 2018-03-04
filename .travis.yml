@@ -16,8 +16,8 @@ script:
 deploy:
   provider: azure_web_apps
   skip_cleanup: true
-  site: at-st-web-api
-  slot: at-st-web-api-staging
+  site: at-st-api
+  slot: at-st-api-staging
   on:
     branch: master
 notifications:
