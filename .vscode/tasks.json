@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AT-ST-web-api.csproj"
+                "${workspaceFolder}"
             ],
             "problemMatcher": "$msCompile"
         }

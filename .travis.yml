@@ -1,0 +1,35 @@
+language: csharp
+dist: trusty
+sudo: required
+mono: none
+dotnet: 1.1.5
+branches:
+  only:
+    - master
+solution: AT-ST-web-api.sln
+install:
+  - dotnet restore
+  # - npm install
+script:
+  - dotnet build --configuration Release
+  - dotnet test ./AT-ST-web-api.test
+deploy:
+  provider: azure_web_apps
+  skip_cleanup: true
+  site: at-st-web-api
+  slot: at-st-web-api-staging
+  on:
+    branch: release
+    condition: type = push
+notifications:
+  email:
+    on_success: never
+    on_failure: always
+
+
+
+
+
+
+
+
