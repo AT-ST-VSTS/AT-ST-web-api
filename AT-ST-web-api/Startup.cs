@@ -2,30 +2,84 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using AT_ST_web_api.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Vso;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace AT_ST_web_api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
 
-        public IConfiguration Configuration { get; }
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        private readonly IConfiguration _configuration;
+
+        public Startup(IHostingEnvironment env, IConfiguration config)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+            _configuration = builder.Build();
+
+            _hostingEnvironment = env;
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            // Register Development settings
+            if (_hostingEnvironment.IsDevelopment())
+            {
+            }
+
+            // Add functionality to inject IOptions<T>
+            services.AddOptions();
+
+            services.Configure<OAuthSettings>(_configuration.GetSection("OAuthSettings"));
+
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = "vso";
+                })
+                .AddCookie()
+                // .AddCookie(o => o.LoginPath = new PathString("/login"))
+                .AddVsoAccount(options =>
+                {
+                    var OAuthVsoSettings = _configuration.GetSection("OAuthSettings:OAuthVsoSettings");
+
+                    options.ClientId = OAuthVsoSettings["ClientId"];
+                    options.ClientSecret = OAuthVsoSettings["ClientSecret"];
+                    options.TokenEndpoint = OAuthVsoSettings["TokenEndpoint"];
+                    options.AuthorizationEndpoint = OAuthVsoSettings["AuthorizationEndpoint"];
+                    options.CallbackPath = OAuthVsoSettings["CallbackEndpoint"];
+                    options.Scope.Clear();
+                    var scopes = OAuthVsoSettings["Scope"].Split(' ');
+                    foreach (var scope in scopes)
+                    {
+                        options.Scope.Add(scope);
+                    }
+                });
+
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
@@ -45,25 +99,35 @@ namespace AT_ST_web_api
                 var xmlPath = Path.Combine(basePath, "AT-ST-web-api.xml"); 
                 c.IncludeXmlComments(xmlPath);
             });
+
+            // Use MVC middleware
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+            if(env.IsProduction())
+            {
+                app.UseExceptionHandler("/Error");
+            }
+            else
             {
                 app.UseDeveloperExceptionPage();
             }
+            
+            app.UseAuthentication();
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            // Use swagger middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            // Use swagger middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
+            // Use MVC middleware
             app.UseMvc();
         }
     }
