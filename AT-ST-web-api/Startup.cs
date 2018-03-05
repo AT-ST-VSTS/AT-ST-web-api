@@ -86,7 +86,6 @@ namespace AT_ST_web_api
                 options.Scope.Add("vso.dashboards");
                 options.Scope.Add("vso.entitlements");
                 options.Scope.Add("vso.identity");
-                options.Scope.Add("vso.memberentitlementmanagement");
                 options.Scope.Add("vso.project");
                 options.Scope.Add("vso.work");
                 options.Scope.Add("vso.workitemsearch");
@@ -96,11 +95,9 @@ namespace AT_ST_web_api
                 options.ClaimActions.MapJsonKey("vso.dashboards", "vso.dashboards");
                 options.ClaimActions.MapJsonKey("vso.entitlements", "vso.entitlements");
                 options.ClaimActions.MapJsonKey("vso.identity", "vso.identity");
-                options.ClaimActions.MapJsonKey("vso.memberentitlementmanagement", "vso.memberentitlementmanagement");
                 options.ClaimActions.MapJsonKey("vso.project", "vso.project");
                 options.ClaimActions.MapJsonKey("vso.work", "vso.work");
                 options.ClaimActions.MapJsonKey("vso.workitemsearch", "vso.workitemsearch");
-                options.ClaimActions.MapJsonKey("vso.profile", "vso.profile");
 
                 options.Events = new OAuthEvents
                 {
