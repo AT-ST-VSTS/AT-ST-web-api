@@ -77,7 +77,7 @@ namespace AT_ST_web_api
             {
                 options.ClientId = Configuration["oauth:vso:ClientId"];
                 options.ClientSecret = Configuration["oauth:vso:ClientSecret"];
-                options.CallbackPath = new PathString("oauth-callback");
+                options.CallbackPath = new PathString("/oauth-callback");
 
                 options.AuthorizationEndpoint = "https://app.vssps.visualstudio.com/oauth2/authorize?";
                 options.TokenEndpoint = "https://app.vssps.visualstudio.com/oauth2/token?mkt=en-US";
