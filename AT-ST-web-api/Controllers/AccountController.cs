@@ -152,7 +152,8 @@ namespace AT_ST_web_api.Controllers
 
         private String GenerateAuthorizeUrl()
         {
-            UriBuilder uriBuilder = new UriBuilder(this.Configuration["oauth:vso:AuthorizationEndpoint"]);
+            var authorizationEndpoint = this.Configuration["oauth:vso:AuthorizationEndpoint"];
+            UriBuilder uriBuilder = new UriBuilder(authorizationEndpoint ?? String.Empty);
             var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query ?? String.Empty);
 
             queryParams["client_id"] = this.Configuration["oauth:vso:ClientId"];
@@ -160,7 +161,6 @@ namespace AT_ST_web_api.Controllers
             queryParams["state"] = "state";
             queryParams["scope"] = this.Configuration["oauth:vso:Scope"];
             queryParams["redirect_uri"] = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, this.Configuration["oauth:vso:CallbackEndpoint"].ToString()).ToString();
-            var env = this.HostingEnvironment;
             uriBuilder.Query = queryParams.ToString();
 
             return uriBuilder.ToString();
