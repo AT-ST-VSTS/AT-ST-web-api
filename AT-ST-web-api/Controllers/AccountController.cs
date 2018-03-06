@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using OAuthSample.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 
 namespace AT_ST_web_api.Controllers
 {
@@ -20,11 +21,14 @@ namespace AT_ST_web_api.Controllers
     [Route("[controller]/[action]")]
     public class AccountController : Controller
     {
-        private IConfiguration Configuration;
- 
-        public AccountController(IConfiguration configuration)
+        private IConfiguration Configuration { get; }
+
+        public IHostingEnvironment HostingEnvironment { get; }
+    
+        public AccountController(IHostingEnvironment env, IConfiguration configuration)
         {
             this.Configuration = configuration;
+            this.HostingEnvironment = env;
         }
 
         [HttpGet]
@@ -155,8 +159,8 @@ namespace AT_ST_web_api.Controllers
             queryParams["response_type"] = "Assertion";
             queryParams["state"] = "state";
             queryParams["scope"] = this.Configuration["oauth:vso:Scope"];
-            queryParams["redirect_uri"] = new PathString(this.Configuration["oauth:vso:CallbackEndpoint"]);
-    
+            queryParams["redirect_uri"] = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, this.Configuration["oauth:vso:CallbackEndpoint"].ToString()).ToString();
+            var env = this.HostingEnvironment;
             uriBuilder.Query = queryParams.ToString();
 
             return uriBuilder.ToString();
