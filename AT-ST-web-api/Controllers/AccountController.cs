@@ -54,12 +54,13 @@ namespace AT_ST_web_api.Controllers
 
 
 
-
+        [HttpGet]
         public ActionResult RequestToken(string code, string status)
         {
             return new RedirectResult(GenerateAuthorizeUrl());
         }
 
+        [HttpGet]
         public ActionResult RefreshToken(string refreshToken)
         {
             TokenModel token = new TokenModel();
@@ -79,6 +80,7 @@ namespace AT_ST_web_api.Controllers
             return View("TokenView");
         }
 
+        [HttpGet]
         public ActionResult Callback(string code, string state)
         {
             TokenModel token = new TokenModel();
@@ -144,7 +146,7 @@ namespace AT_ST_web_api.Controllers
             return error;
         }
 
-        public String GenerateAuthorizeUrl()
+        private String GenerateAuthorizeUrl()
         {
             UriBuilder uriBuilder = new UriBuilder(this.Configuration["oauth:vso:AuthorizationEndpoint"]);
             var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query ?? String.Empty);
@@ -154,13 +156,13 @@ namespace AT_ST_web_api.Controllers
             queryParams["state"] = "state";
             queryParams["scope"] = this.Configuration["oauth:vso:Scope"];
             queryParams["redirect_uri"] = new PathString(this.Configuration["oauth:vso:CallbackEndpoint"]);
-
+    
             uriBuilder.Query = queryParams.ToString();
 
             return uriBuilder.ToString();
         }
 
-        public string GenerateRequestPostData(string code)
+        private string GenerateRequestPostData(string code)
         {
             return string.Format("client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion={0}&grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={1}&redirect_uri={2}",
                 HttpUtility.UrlEncode(this.Configuration["oauth:vso:ClientSecret"]),
@@ -169,7 +171,7 @@ namespace AT_ST_web_api.Controllers
                 );
         }
 
-        public string GenerateRefreshPostData(string refreshToken)
+        private string GenerateRefreshPostData(string refreshToken)
         {
             return string.Format("client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion={0}&grant_type=refresh_token&assertion={1}&redirect_uri={2}",
                 HttpUtility.UrlEncode(this.Configuration["ClientSecret"]),
