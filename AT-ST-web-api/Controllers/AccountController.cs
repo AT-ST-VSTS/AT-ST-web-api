@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using OAuthSample.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Hosting;
 
 namespace AT_ST_web_api.Controllers
 {
@@ -22,13 +21,10 @@ namespace AT_ST_web_api.Controllers
     public class AccountController : Controller
     {
         private IConfiguration Configuration;
-
-        public IHostingEnvironment HostingEnvironment;
     
-        public AccountController(IHostingEnvironment env, IConfiguration configuration)
+        public AccountController(IConfiguration configuration)
         {
             this.Configuration = configuration;
-            this.HostingEnvironment = env;
         }
 
         [HttpGet]
@@ -59,7 +55,7 @@ namespace AT_ST_web_api.Controllers
 
 
         [HttpGet]
-        public ActionResult RequestToken(string code, string status)
+        public ActionResult RequestToken(string returnUrl = "/")
         {
             return new RedirectResult(GenerateAuthorizeUrl());
         }
@@ -153,14 +149,17 @@ namespace AT_ST_web_api.Controllers
         private String GenerateAuthorizeUrl()
         {
             var authorizationEndpoint = this.Configuration["oauth:vso:AuthorizationEndpoint"];
-            UriBuilder uriBuilder = new UriBuilder(authorizationEndpoint ?? String.Empty);
+            UriBuilder uriBuilder = new UriBuilder(authorizationEndpoint);
             var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query ?? String.Empty);
-
+    
             queryParams["client_id"] = this.Configuration["oauth:vso:ClientId"];
             queryParams["response_type"] = "Assertion";
             queryParams["state"] = "state";
             queryParams["scope"] = this.Configuration["oauth:vso:Scope"];
-            queryParams["redirect_uri"] = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, this.Configuration["oauth:vso:CallbackEndpoint"].ToString()).ToString();
+
+            var redirect_uri = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, this.Configuration["oauth:vso:CallbackEndpoint"].ToString());
+            queryParams["redirect_uri"] = redirect_uri.ToString();
+
             uriBuilder.Query = queryParams.ToString();
 
             return uriBuilder.ToString();
