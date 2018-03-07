@@ -27,6 +27,13 @@ namespace AT_ST_web_api
     {
         public Startup(IHostingEnvironment env, IConfiguration config)
         {
+            // var builder = new ConfigurationBuilder()
+            //     .SetBasePath(env.ContentRootPath)
+            //     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            //     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            //     .AddEnvironmentVariables();
+        
+            // this.Configuration = builder.Build();
             this.Configuration = config;
 
             HostingEnvironment = env;
@@ -39,19 +46,87 @@ namespace AT_ST_web_api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // if (HostingEnvironment.IsDevelopment())
-            // {
-            //     services.Configure<MvcOptions>(options =>
-            //     {
-            //         options.Filters.Add(new RequireHttpsAttribute());
-            //     });
-            // }
-
             services.AddMvc();
+            
+            // Add functionality to inject IOptions<T>
+            services.AddOptions();
 
             // services.Configure<IConfigurationSection>(Configuration.GetSection("oauth:vso"));
             // services.Configure<IConfiguration>(this.Configuration);
             services.AddSingleton<IConfiguration>(Configuration);
+
+            // Register Development settings
+            if (HostingEnvironment.IsDevelopment())
+            {
+            //     services.Configure<MvcOptions>(options =>
+            //     {
+            //         options.Filters.Add(new RequireHttpsAttribute());
+            //     });
+            }
+
+            // Register Cookies
+            // services.ConfigureApplicationCookie(options =>
+            // {
+            //     // Cookie settings
+            //     options.Cookie.HttpOnly = true;
+            //     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            //     options.LoginPath = "/Account/Login"; // If the LoginPath is not set here, ASP.NET Core will default to /Account/Login
+            //     options.LogoutPath = "/Account/Logout"; // If the LogoutPath is not set here, ASP.NET Core will default to /Account/Logout
+            //     options.AccessDeniedPath = "/Account/AccessDenied"; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
+            //     options.SlidingExpiration = true;
+            // });
+
+            // Register OAuth
+            // services.AddAuthentication(options =>
+            // {
+            //     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            //     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            //     options.DefaultChallengeScheme = "VSTS";
+            // })
+            // .AddCookie(options => options.LoginPath = new PathString("/account/login"))
+            // .AddOAuth("VSTS", options =>
+            // {
+            //     options.ClientId = this.Configuration["oauth:vso:ClientId"];
+            //     options.ClientSecret = this.Configuration["oauth:vso:ClientSecret"];
+            //     options.CallbackPath = new PathString("/oauth-callback");
+
+            //     options.AuthorizationEndpoint = "https://app.vssps.visualstudio.com/oauth2/authorize?";
+            //     options.TokenEndpoint = "https://app.vssps.visualstudio.com/oauth2/token?mkt=en-US";
+            //     // options.UserInformationEndpoint = "https://api.github.com/user";
+
+            //     options.Scope.Add("vso.dashboards");
+            //     options.Scope.Add("vso.entitlements");
+            //     options.Scope.Add("vso.identity");
+            //     options.Scope.Add("vso.project");
+            //     options.Scope.Add("vso.work");
+            //     options.Scope.Add("vso.workitemsearch");
+
+            //     options.ClaimActions.MapJsonKey("access_token", "access_token");
+            //     options.ClaimActions.MapJsonKey("token_type", "token_type");
+            //     options.ClaimActions.MapJsonKey("expires_in", "expires_in");
+            //     options.ClaimActions.MapJsonKey("refresh_token", "refresh_token");
+
+            //     // options.Events = new OAuthEvents
+            //     // {
+            //     //     OnCreatingTicket = async context =>
+            //     //     {
+            //     //         // var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+            //     //         // request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //     //         // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+
+            //     //         // var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+            //     //         // response.EnsureSuccessStatusCode();
+
+            //     //         // var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            //     //         // context.RunClaimActions(user);
+
+            //     //         var user = JObject.Parse(await context..ReadAsStringAsync());
+
+            //     //         context.RunClaimActions(user);
+            //     //     }
+            //     // };
+            // });
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
@@ -71,102 +146,42 @@ namespace AT_ST_web_api
                 var xmlPath = Path.Combine(basePath, "AT-ST-web-api.xml"); 
                 c.IncludeXmlComments(xmlPath);
             });
-
-            // services.ConfigureApplicationCookie(options =>
-            // {
-            //     // Cookie settings
-            //     options.Cookie.HttpOnly = true;
-            //     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-            //     options.LoginPath = "/Account/Login"; // If the LoginPath is not set here, ASP.NET Core will default to /Account/Login
-            //     options.LogoutPath = "/Account/Logout"; // If the LogoutPath is not set here, ASP.NET Core will default to /Account/Logout
-            //     options.AccessDeniedPath = "/Account/AccessDenied"; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
-            //     options.SlidingExpiration = true;
-            // });
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = "VSTS";
-            })
-            .AddCookie(options => options.LoginPath = new PathString("/account/login"))
-            .AddOAuth("VSTS", options =>
-            {
-                options.ClientId = this.Configuration["oauth:vso:ClientId"];
-                options.ClientSecret = this.Configuration["oauth:vso:ClientSecret"];
-                options.CallbackPath = new PathString("/oauth-callback");
-
-                options.AuthorizationEndpoint = "https://app.vssps.visualstudio.com/oauth2/authorize?";
-                options.TokenEndpoint = "https://app.vssps.visualstudio.com/oauth2/token?mkt=en-US";
-                // options.UserInformationEndpoint = "https://api.github.com/user";
-
-                options.Scope.Add("vso.dashboards");
-                options.Scope.Add("vso.entitlements");
-                options.Scope.Add("vso.identity");
-                options.Scope.Add("vso.project");
-                options.Scope.Add("vso.work");
-                options.Scope.Add("vso.workitemsearch");
-
-                options.ClaimActions.MapJsonKey("access_token", "access_token");
-                options.ClaimActions.MapJsonKey("token_type", "token_type");
-                options.ClaimActions.MapJsonKey("expires_in", "expires_in");
-                options.ClaimActions.MapJsonKey("refresh_token", "refresh_token");
-
-                // options.Events = new OAuthEvents
-                // {
-                //     OnCreatingTicket = async context =>
-                //     {
-                //         // var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                //         // request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                //         // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-
-                //         // var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
-                //         // response.EnsureSuccessStatusCode();
-
-                //         // var user = JObject.Parse(await response.Content.ReadAsStringAsync());
-
-                //         // context.RunClaimActions(user);
-
-                //         var user = JObject.Parse(await context..ReadAsStringAsync());
-
-                //         context.RunClaimActions(user);
-                //     }
-                // };
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment() || env.IsStaging())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
-            }
-            else
+            if(env.IsProduction())
             {
                 app.UseExceptionHandler("/Error");
             }
-
-            if (env.IsDevelopment())
+            else
             {
-                // var options = new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 63423);
-                // app.UseRewriter(options);
+                app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
+
+                // register Development
+                if (env.IsDevelopment())
+                {
+                    // var options = new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 63423);
+                    // app.UseRewriter(options);
+                }
             }
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            // Use MVC middleware
+            app.UseMvc();
+
+            // Use authentication middleware to the pipeline
+            // app.UseAuthentication();
+
+            // Use swagger middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            // Use swagger middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
-
-            app.UseMvc();
-
-            //Adds the authentication middleware to the pipeline
-            app.UseAuthentication();
         }
     }
 }

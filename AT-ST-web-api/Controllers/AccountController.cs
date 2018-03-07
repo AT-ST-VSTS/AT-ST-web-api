@@ -9,9 +9,9 @@ using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using OAuthSample.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using OAuth.Models;
 
 namespace AT_ST_web_api.Controllers
 {
@@ -22,9 +22,9 @@ namespace AT_ST_web_api.Controllers
     {
         public IConfiguration Configuration { get; private set; }
     
-        public AccountController(IConfiguration configuration)
+        public AccountController(IConfiguration settings)
         {
-            this.Configuration = configuration;
+            this.Configuration = settings;
         }
 
         [HttpGet]
@@ -58,11 +58,10 @@ namespace AT_ST_web_api.Controllers
 
 
 
-
         [HttpGet]
-        public ActionResult RequestToken(string returnUrl = "/")
+        public IActionResult LoginOAuth(string provider = "vso")
         {
-            return new RedirectResult(GenerateAuthorizeUrl());
+            return new RedirectResult(GenerateAuthorizeUrl(provider));
         }
 
         [HttpGet]
@@ -151,68 +150,62 @@ namespace AT_ST_web_api.Controllers
             return error;
         }
 
-        private String GenerateAuthorizeUrl()
+        private String GenerateAuthorizeUrl(string provider = "vso")
         {
-            string authorizationEndpoint = this.Configuration["oauth:vso:AuthorizationEndpoint"] ?? String.Empty;
+            var providerConfiguration = this.Configuration.GetSection("oauth:"+ provider);
+
+            var authorizationEndpoint = providerConfiguration["AuthorizationEndpoint"];
+            var providerClientId = providerConfiguration["ClientId"];
+            var providerScope = providerConfiguration["Scope"];
+            var providerCallbackEndpoint = providerConfiguration["CallbackEndpoint"];
+
+            var redirect_uri = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port.Value, providerCallbackEndpoint).ToString();
+
             UriBuilder uriBuilder = new UriBuilder(authorizationEndpoint);
             var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query ?? String.Empty);
     
-            queryParams["client_id"] = this.Configuration["oauth:vso:ClientId"];
+            queryParams["client_id"] = providerClientId;
             queryParams["response_type"] = "Assertion";
             queryParams["state"] = "state";
-            queryParams["scope"] = this.Configuration["oauth:vso:Scope"];
-
-            var redirect_uri = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, this.Configuration["oauth:vso:CallbackEndpoint"].ToString());
-            queryParams["redirect_uri"] = redirect_uri.ToString();
+            queryParams["scope"] = providerScope;
+            queryParams["redirect_uri"] = redirect_uri;
 
             uriBuilder.Query = queryParams.ToString();
 
             return uriBuilder.ToString();
         }
 
-        private string GenerateRequestPostData(string code)
+        private string GenerateRequestPostData(string code, string provider = "vso")
         {
+            var providerConfiguration = this.Configuration.GetSection("oauth:"+ provider);
+
+            var providerClientSecret = providerConfiguration["ClientSecret"];
+            var providerCallbackEndpoint = providerConfiguration["CallbackEndpoint"];
+
+            var redirect_uri = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, providerCallbackEndpoint).ToString();
+
             return string.Format("client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion={0}&grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={1}&redirect_uri={2}",
-                HttpUtility.UrlEncode(this.Configuration["oauth:vso:ClientSecret"]),
+                HttpUtility.UrlEncode(providerClientSecret),
                 HttpUtility.UrlEncode(code),
-                this.Configuration["oauth:vso:CallbackEndpoint"]
+                redirect_uri
                 );
         }
 
-        private string GenerateRefreshPostData(string refreshToken)
+        private string GenerateRefreshPostData(string refreshToken, string provider = "vso")
         {
+            var providerConfiguration = this.Configuration.GetSection("oauth:"+ provider);
+
+            var providerClientSecret = providerConfiguration["ClientSecret"];
+            var providerCallbackEndpoint = providerConfiguration["CallbackEndpoint"];
+
+            var redirect_uri = new UriBuilder(Request.Scheme, Request.Host.Value, Request.Host.Port.Value, providerCallbackEndpoint).ToString();
+
             return string.Format("client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion={0}&grant_type=refresh_token&assertion={1}&redirect_uri={2}",
-                HttpUtility.UrlEncode(this.Configuration["ClientSecret"]),
+                HttpUtility.UrlEncode(providerClientSecret),
                 HttpUtility.UrlEncode(refreshToken),
-                this.Configuration["oauth:vso:CallbackEndpoint"]
+                redirect_uri
                 );
 
         }
     }
-}
-
-
-namespace OAuthSample.Models
-{
-    public class TokenModel
-    {
-        public TokenModel()
-        {
-
-        }
-
-        [JsonProperty(PropertyName = "access_token")]
-        public String accessToken { get; set; }
-
-        [JsonProperty(PropertyName = "token_type")]
-        public String tokenType { get; set; }
-
-        [JsonProperty(PropertyName = "expires_in")]
-        public String expiresIn { get; set; }
-
-        [JsonProperty(PropertyName = "refresh_token")]
-        public String refreshToken { get; set; }
-
-    }
-
 }
