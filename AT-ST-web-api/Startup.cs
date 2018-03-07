@@ -25,30 +25,32 @@ namespace AT_ST_web_api
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration config)
         {
-            this.Configuration = configuration;
+            this.Configuration = config;
 
-            this.HostingEnvironment = env;
+            HostingEnvironment = env;
         }
 
-        public IHostingEnvironment HostingEnvironment;
+        public IHostingEnvironment HostingEnvironment { get; private set; }
 
-        public IConfiguration Configuration;
+        public IConfiguration Configuration { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            if (this.HostingEnvironment.IsDevelopment())
-            {
-                services.Configure<MvcOptions>(options =>
-                {
-                    options.Filters.Add(new RequireHttpsAttribute());
-                });
-            }
+            // if (HostingEnvironment.IsDevelopment())
+            // {
+            //     services.Configure<MvcOptions>(options =>
+            //     {
+            //         options.Filters.Add(new RequireHttpsAttribute());
+            //     });
+            // }
 
             services.AddMvc();
 
+            // services.Configure<IConfigurationSection>(Configuration.GetSection("oauth:vso"));
+            // services.Configure<IConfiguration>(this.Configuration);
             services.AddSingleton<IConfiguration>(Configuration);
 
             // Register the Swagger generator, defining one or more Swagger documents
@@ -90,8 +92,8 @@ namespace AT_ST_web_api
             .AddCookie(options => options.LoginPath = new PathString("/account/login"))
             .AddOAuth("VSTS", options =>
             {
-                options.ClientId = Configuration["oauth:vso:ClientId"];
-                options.ClientSecret = Configuration["oauth:vso:ClientSecret"];
+                options.ClientId = this.Configuration["oauth:vso:ClientId"];
+                options.ClientSecret = this.Configuration["oauth:vso:ClientSecret"];
                 options.CallbackPath = new PathString("/oauth-callback");
 
                 options.AuthorizationEndpoint = "https://app.vssps.visualstudio.com/oauth2/authorize?";
@@ -148,8 +150,8 @@ namespace AT_ST_web_api
 
             if (env.IsDevelopment())
             {
-                var options = new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 63423);
-                app.UseRewriter(options);
+                // var options = new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 63423);
+                // app.UseRewriter(options);
             }
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
