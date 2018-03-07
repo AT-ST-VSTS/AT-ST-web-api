@@ -21,9 +21,9 @@ namespace AT_ST_web_api.Controllers
     [Route("[controller]/[action]")]
     public class AccountController : Controller
     {
-        private IConfiguration Configuration { get; }
+        private IConfiguration Configuration;
 
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IHostingEnvironment HostingEnvironment;
     
         public AccountController(IHostingEnvironment env, IConfiguration configuration)
         {
