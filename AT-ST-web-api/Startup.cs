@@ -28,17 +28,13 @@ namespace AT_ST_web_api
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
             this.Configuration = configuration;
-            // this.Configuration = new ConfigurationBuilder()
-            //     .SetBasePath(env.ContentRootPath)
-            //     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            //     .Build();
 
             this.HostingEnvironment = env;
         }
 
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IHostingEnvironment HostingEnvironment;
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
