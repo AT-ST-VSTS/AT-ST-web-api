@@ -153,7 +153,7 @@ namespace AT_ST_web_api.Controllers
 
         private String GenerateAuthorizeUrl()
         {
-            var authorizationEndpoint = this.Configuration["oauth:vso:AuthorizationEndpoint"];
+            string authorizationEndpoint = this.Configuration["oauth:vso:AuthorizationEndpoint"] ?? String.Empty;
             UriBuilder uriBuilder = new UriBuilder(authorizationEndpoint);
             var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query ?? String.Empty);
     
