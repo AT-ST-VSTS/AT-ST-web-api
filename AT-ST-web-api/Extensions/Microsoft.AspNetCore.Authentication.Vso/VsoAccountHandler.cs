@@ -21,18 +21,18 @@ namespace Microsoft.AspNetCore.Authentication.Vso
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+            // var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
+            // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
-            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"An error occurred when retrieving Vso user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Vso Account API is enabled.");
-            }
+            // var response = await Backchannel.SendAsync(request, Context.RequestAborted);
+            // if (!response.IsSuccessStatusCode)
+            // {
+            //     throw new HttpRequestException($"An error occurred when retrieving Vso user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Vso Account API is enabled.");
+            // }
 
-            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+            // var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload);
+            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens);
             context.RunClaimActions();
 
             await Events.CreatingTicket(context);

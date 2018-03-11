@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.Vso
                         uriBuilder.Query = query.ToString();
                         context.Response.Redirect(uriBuilder.ToString());
                         return Task.CompletedTask;
-
                     }
                 };
         }
