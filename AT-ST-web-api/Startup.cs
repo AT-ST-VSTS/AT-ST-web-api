@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using AT_ST_web_api.Data;
 using AT_ST_web_api.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Vso;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -71,24 +70,53 @@ namespace AT_ST_web_api
                     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = "vso";
                 })
-                .AddCookie()
-                // .AddCookie(o => o.LoginPath = new PathString("/login"))
-                .AddVsoAccount(options =>
+                .AddCookie(options =>
                 {
-                    var OAuthVsoSettings = _configuration.GetSection("OAuthSettings:OAuthVsoSettings");
-
-                    options.ClientId = OAuthVsoSettings["ClientId"];
-                    options.ClientSecret = OAuthVsoSettings["ClientSecret"];
-                    options.TokenEndpoint = OAuthVsoSettings["TokenEndpoint"];
-                    options.AuthorizationEndpoint = OAuthVsoSettings["AuthorizationEndpoint"];
-                    options.CallbackPath = OAuthVsoSettings["CallbackEndpoint"];
-                    options.Scope.Clear();
-                    var scopes = OAuthVsoSettings["Scope"].Split(' ');
+                    // options.AccessDeniedPath = "/error/Access";
+                    options.LoginPath = "/account/LogIn";
+                    options.LogoutPath = "/account/LogOff";
+                })                
+                .AddVisualStudio(options =>
+                {
+                    var settingsVisualStudio = _configuration.GetSection("OAuthSettings:VisualStudio");
+                    options.ClientId = settingsVisualStudio["ClientId"];
+                    options.ClientSecret = settingsVisualStudio["ClientSecret"];
+                    options.CallbackPath = "/account/oauth-callback-VisualStudio";
+                    var scopes = settingsVisualStudio["Scope"].Split(' ');
+                    foreach (var scope in scopes)
+                    {
+                        options.Scope.Add(scope);
+                    }
+                })
+                .AddGitHub(options =>
+                {
+                    var settingsGitHub = _configuration.GetSection("OAuthSettings:GitHub");
+                    options.ClientId = settingsGitHub["ClientId"];
+                    options.ClientSecret = settingsGitHub["ClientSecret"];
+                    options.CallbackPath = "/account/oauth-callback-GitHub";
+                    var scopes = settingsGitHub["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
                         options.Scope.Add(scope);
                     }
                 });
+                // .AddCookie(o => o.LoginPath = new PathString("/login"))
+                // .AddVsoAccount(options =>
+                // {
+                //     var OAuthVsoSettings = _configuration.GetSection("OAuthSettings:OAuthVsoSettings");
+
+                //     options.ClientId = OAuthVsoSettings["ClientId"];
+                //     options.ClientSecret = OAuthVsoSettings["ClientSecret"];
+                //     options.TokenEndpoint = OAuthVsoSettings["TokenEndpoint"];
+                //     options.AuthorizationEndpoint = OAuthVsoSettings["AuthorizationEndpoint"];
+                //     options.CallbackPath = OAuthVsoSettings["CallbackEndpoint"];
+                //     options.Scope.Clear();
+                //     var scopes = OAuthVsoSettings["Scope"].Split(' ');
+                //     foreach (var scope in scopes)
+                //     {
+                //         options.Scope.Add(scope);
+                //     }
+                // });
 
 
             // Register the Swagger generator, defining one or more Swagger documents

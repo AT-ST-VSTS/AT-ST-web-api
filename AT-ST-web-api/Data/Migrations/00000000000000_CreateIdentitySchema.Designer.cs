@@ -122,7 +122,7 @@ namespace AT_ST_web_api.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("New_folder.Models.ApplicationUser", b =>
+            modelBuilder.Entity("AT_ST_web_api.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id");
 
@@ -181,7 +181,7 @@ namespace AT_ST_web_api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("New_folder.Models.ApplicationUser")
+                    b.HasOne("AT_ST_web_api.Models.ApplicationUser")
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -189,7 +189,7 @@ namespace AT_ST_web_api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("New_folder.Models.ApplicationUser")
+                    b.HasOne("AT_ST_web_api.Models.ApplicationUser")
                         .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -202,7 +202,7 @@ namespace AT_ST_web_api.Data.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("New_folder.Models.ApplicationUser")
+                    b.HasOne("AT_ST_web_api.Models.ApplicationUser")
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
