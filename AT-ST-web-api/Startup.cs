@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AT_ST_web_api.Data;
 using AT_ST_web_api.Models;
+using AT_ST_web_api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -60,9 +61,14 @@ namespace AT_ST_web_api
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            {
+                config.SignIn.RequireConfirmedEmail = true;
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddSingleton<IEmailSender, EmailSender>();
 
             services.AddAuthentication(options =>
                 {
@@ -73,15 +79,15 @@ namespace AT_ST_web_api
                 .AddCookie(options =>
                 {
                     // options.AccessDeniedPath = "/error/Access";
-                    options.LoginPath = "/account/LogIn";
-                    options.LogoutPath = "/account/LogOff";
+                    options.LoginPath = "/auth/LogIn";
+                    options.LogoutPath = "/auth/LogOff";
                 })                
                 .AddVisualStudio(options =>
                 {
                     var settingsVisualStudio = _configuration.GetSection("OAuthSettings:VisualStudio");
                     options.ClientId = settingsVisualStudio["ClientId"];
                     options.ClientSecret = settingsVisualStudio["ClientSecret"];
-                    options.CallbackPath = "/account/oauth-callback-VisualStudio";
+                    options.CallbackPath = "/auth/oauth-callback-VisualStudio";
                     var scopes = settingsVisualStudio["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
@@ -93,7 +99,7 @@ namespace AT_ST_web_api
                     var settingsGitHub = _configuration.GetSection("OAuthSettings:GitHub");
                     options.ClientId = settingsGitHub["ClientId"];
                     options.ClientSecret = settingsGitHub["ClientSecret"];
-                    options.CallbackPath = "/account/oauth-callback-GitHub";
+                    options.CallbackPath = "/auth/oauth-callback-GitHub";
                     var scopes = settingsGitHub["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
