@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using AT_ST_web_api.Services;
+using ATSTWebApi.Services;
 
-namespace AT_ST_web_api.Services
+namespace ATSTWebApi.Services
 {
     public static class EmailSenderExtensions
     {

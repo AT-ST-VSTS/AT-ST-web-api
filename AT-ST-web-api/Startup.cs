@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AT_ST_web_api.Data;
-using AT_ST_web_api.Models;
-using AT_ST_web_api.Services;
+using ATSTWebApi.Data;
+using ATSTWebApi.Models;
+using ATSTWebApi.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace AT_ST_web_api
+namespace ATSTWebApi
 {
     public class Startup
     {
@@ -59,10 +59,14 @@ namespace AT_ST_web_api
             services.Configure<OAuthSettings>(_configuration.GetSection("OAuthSettings"));
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
             {
+                // Lockout settings
+                config.Lockout.AllowedForNewUsers = true;
+                config.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                config.Lockout.MaxFailedAccessAttempts = 5; 
                 // Password settings
                 config.Password.RequireDigit = true;
                 config.Password.RequiredLength = 8;
@@ -105,7 +109,7 @@ namespace AT_ST_web_api
                     var settingsVisualStudio = _configuration.GetSection("OAuthSettings:VisualStudio");
                     options.ClientId = settingsVisualStudio["ClientId"];
                     options.ClientSecret = settingsVisualStudio["ClientSecret"];
-                    options.CallbackPath = "/auth/oauth-callback-VisualStudio";
+                    options.CallbackPath = "/auth/ExternalLoginCallback";
                     var scopes = settingsVisualStudio["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
@@ -117,7 +121,7 @@ namespace AT_ST_web_api
                     var settingsGitHub = _configuration.GetSection("OAuthSettings:GitHub");
                     options.ClientId = settingsGitHub["ClientId"];
                     options.ClientSecret = settingsGitHub["ClientSecret"];
-                    options.CallbackPath = "/auth/oauth-callback-GitHub";
+                    options.CallbackPath = "/auth/ExternalLoginCallback";
                     var scopes = settingsGitHub["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {

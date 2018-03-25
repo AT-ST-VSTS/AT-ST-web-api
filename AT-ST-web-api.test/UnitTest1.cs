@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace AT_ST_web_api_test
+namespace ATSTWebApi_test
 {
     [TestClass]
     public class UnitTest1

@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using AT_ST_web_api.Models;
-using AT_ST_web_api.Models.AuthViewModels;
-using AT_ST_web_api.Services;
+using ATSTWebApi.Models;
+using ATSTWebApi.Models.AuthViewModels;
+using ATSTWebApi.Services;
 
-namespace AT_ST_web_api.Controllers
+namespace ATSTWebApi.Controllers
 {
     [Authorize]
     [Route("[controller]/[action]")]

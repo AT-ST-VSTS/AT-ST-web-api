@@ -10,11 +10,11 @@
 // using Microsoft.AspNetCore.Mvc;
 // using Microsoft.Extensions.Logging;
 // using Microsoft.Extensions.Options;
-// using AT_ST_web_api.Models;
-// using AT_ST_web_api.Models.ManageViewModels;
-// using AT_ST_web_api.Services;
+// using ATSTWebApi.Models;
+// using ATSTWebApi.Models.ManageViewModels;
+// using ATSTWebApi.Services;
 
-// namespace AT_ST_web_api.Controllers
+// namespace ATSTWebApi.Controllers
 // {
 //     [Authorize]
 //     [Route("[controller]/[action]")]
@@ -522,7 +522,7 @@
 //         {
 //             return string.Format(
 //                 AuthenticatorUriFormat,
-//                 _urlEncoder.Encode("AT_ST_web_api"),
+//                 _urlEncoder.Encode("ATSTWebApi"),
 //                 _urlEncoder.Encode(email),
 //                 unformattedKey);
 //         }

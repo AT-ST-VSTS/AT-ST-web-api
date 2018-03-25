@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace AT_ST_web_api.Models
+namespace ATSTWebApi.Models
 {
     public class OAuthSettings
     {
