@@ -61,9 +61,20 @@ namespace AT_ST_web_api
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
             {
-                config.SignIn.RequireConfirmedEmail = true;
+                // Password settings
+                config.Password.RequireDigit = true;
+                config.Password.RequiredLength = 8;
+                config.Password.RequiredUniqueChars = 2;
+                config.Password.RequireLowercase = true;
+                config.Password.RequireNonAlphanumeric = true;
+                config.Password.RequireUppercase = true;
+                // Signin settings
+                config.SignIn.RequireConfirmedEmail = false;
+                config.SignIn.RequireConfirmedPhoneNumber = false;
+                // User settings
+                config.User.RequireUniqueEmail = true;
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -81,6 +92,13 @@ namespace AT_ST_web_api
                     // options.AccessDeniedPath = "/error/Access";
                     options.LoginPath = "/auth/LogIn";
                     options.LogoutPath = "/auth/LogOff";
+                    options.AccessDeniedPath = "/auth/AccessDenied";
+                    options.Cookie.Name = "atst_cookie";
+                    // options.Cookie.HttpOnly = true; 
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(60); 
+                    // ReturnUrlParameter requires `using Microsoft.AspNetCore.Authentication.Cookies;`
+                    // options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+                    // options.SlidingExpiration = true;
                 })                
                 .AddVisualStudio(options =>
                 {
