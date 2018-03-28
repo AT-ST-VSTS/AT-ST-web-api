@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using ATSTWebApi.Data;
 using ATSTWebApi.Models;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -91,6 +93,29 @@ namespace ATSTWebApi
                     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = "vso";
                 })
+                // https://www.blinkingcaret.com/2017/09/06/secure-web-api-in-asp-net-core/
+                // {
+                //     options.DefaultAuthenticateScheme = "JwtBearer";
+                //     options.DefaultChallengeScheme = "JwtBearer"; 
+                // })
+                // .AddJwtBearer("JwtBearer", jwtBearerOptions =>
+                // {                        
+                //     jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                //     {                            
+                //         ValidateIssuerSigningKey = true,
+                //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your secret goes here")),
+
+                //         ValidateIssuer = true,
+                //         ValidIssuer = "The name of the issuer",
+
+                //         ValidateAudience = true,
+                //         ValidAudience = "The name of the audience",
+
+                //         ValidateLifetime = true, //validate the expiration and not before values in the token
+
+                //         ClockSkew = TimeSpan.FromMinutes(5) //5 minute tolerance for the expiration date
+                //     };
+                // })
                 .AddCookie(options =>
                 {
                     // options.AccessDeniedPath = "/error/Access";
@@ -109,7 +134,7 @@ namespace ATSTWebApi
                     var settingsVisualStudio = _configuration.GetSection("OAuthSettings:VisualStudio");
                     options.ClientId = settingsVisualStudio["ClientId"];
                     options.ClientSecret = settingsVisualStudio["ClientSecret"];
-                    options.CallbackPath = "/auth/ExternalLoginCallback";
+                    options.CallbackPath = "/auth/signin-visualstudio";
                     var scopes = settingsVisualStudio["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
@@ -121,30 +146,13 @@ namespace ATSTWebApi
                     var settingsGitHub = _configuration.GetSection("OAuthSettings:GitHub");
                     options.ClientId = settingsGitHub["ClientId"];
                     options.ClientSecret = settingsGitHub["ClientSecret"];
-                    options.CallbackPath = "/auth/ExternalLoginCallback";
+                    options.CallbackPath = "/auth/signin-github";
                     var scopes = settingsGitHub["Scope"].Split(' ');
                     foreach (var scope in scopes)
                     {
                         options.Scope.Add(scope);
                     }
                 });
-                // .AddCookie(o => o.LoginPath = new PathString("/login"))
-                // .AddVsoAccount(options =>
-                // {
-                //     var OAuthVsoSettings = _configuration.GetSection("OAuthSettings:OAuthVsoSettings");
-
-                //     options.ClientId = OAuthVsoSettings["ClientId"];
-                //     options.ClientSecret = OAuthVsoSettings["ClientSecret"];
-                //     options.TokenEndpoint = OAuthVsoSettings["TokenEndpoint"];
-                //     options.AuthorizationEndpoint = OAuthVsoSettings["AuthorizationEndpoint"];
-                //     options.CallbackPath = OAuthVsoSettings["CallbackEndpoint"];
-                //     options.Scope.Clear();
-                //     var scopes = OAuthVsoSettings["Scope"].Split(' ');
-                //     foreach (var scope in scopes)
-                //     {
-                //         options.Scope.Add(scope);
-                //     }
-                // });
 
 
             // Register the Swagger generator, defining one or more Swagger documents

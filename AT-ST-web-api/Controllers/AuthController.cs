@@ -102,16 +102,6 @@ namespace ATSTWebApi.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult LoginExternal(string provider, string returnUrl = null)
-        {
-            // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "auth", new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return Challenge(properties, provider);
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, bool rememberMe, string returnUrl = null)
         {
             if (!ModelState.IsValid)
@@ -190,47 +180,18 @@ namespace ATSTWebApi.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        // [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        public IActionResult LoginExternal(string provider, string returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
-
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
-
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    // return RedirectToLocal(returnUrl);
-                    return new JsonResult(new { result.Succeeded, returnUrl });
-                }
-                AddErrors(result);
-            }
-
-            // If we got this far, something failed, redisplay form
-            return new JsonResult(new { ModelState.IsValid, ModelState.ValidationState });
+            // Request a redirect to the external login provider.
+            var redirectUrl = Url.Action(nameof(LoginExternalCallback), "auth", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
         }
-
-        [HttpPost]
-        // [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
-            // return RedirectToAction(nameof(HomeController.Index), "Home");
-            return new JsonResult(new { Succeeded = true });
-        }
-
+        
+    
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        public async Task<IActionResult> LoginExternalCallback(string returnUrl = null, string remoteError = null)
         {
             if (remoteError != null)
             {
@@ -271,7 +232,7 @@ namespace ATSTWebApi.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> LoginExternalConfirmation(ExternalLoginViewModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -300,6 +261,46 @@ namespace ATSTWebApi.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             // return View(nameof(ExternalLogin), model);
             return new JsonResult(new { ModelState.IsValid, ModelState.ValidationState, ReturnUrl = returnUrl });
+        }
+        
+        [HttpPost]
+        [AllowAnonymous]
+        // [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User created a new account with password.");
+
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    _logger.LogInformation("User created a new account with password.");
+                    // return RedirectToLocal(returnUrl);
+                    return new JsonResult(new { result.Succeeded, returnUrl });
+                }
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return new JsonResult(new { ModelState.IsValid, ModelState.ValidationState });
+        }
+
+        [HttpPost]
+        // [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out.");
+            // return RedirectToAction(nameof(HomeController.Index), "Home");
+            return new JsonResult(new { Succeeded = true });
         }
 
         [HttpPost]
