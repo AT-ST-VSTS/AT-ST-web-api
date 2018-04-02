@@ -132,6 +132,8 @@ namespace ATSTWebApi
                 .AddVisualStudio(options =>
                 {
                     var settingsVisualStudio = _configuration.GetSection("OAuthSettings:VisualStudio");
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                    options.ClaimsIssuer = "VisualStudio";
                     options.ClientId = settingsVisualStudio["ClientId"];
                     options.ClientSecret = settingsVisualStudio["ClientSecret"];
                     options.CallbackPath = "/auth/signin-visualstudio";
@@ -140,6 +142,66 @@ namespace ATSTWebApi
                     {
                         options.Scope.Add(scope);
                     }
+
+                    options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+                    {
+                        OnCreatingTicket = async (context) =>
+                        {
+                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                            request.Headers.Add("x-li-format", "json");
+
+                            var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+                            response.EnsureSuccessStatusCode();
+                            var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+                            var data = user.SelectToken("data")[0];
+
+                            var id = (string)data["id"];
+                            if (!string.IsNullOrEmpty(id))
+                            {
+                                context.Identity.AddClaim(new Claim("id", id, ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer));
+                            }
+
+                            var DisplayName = (string)data["DisplayName"];
+                            if (!string.IsNullOrEmpty(DisplayName))
+                            {
+                                context.Identity.AddClaim(new Claim("DisplayName", DisplayName, ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer));
+                            }
+
+                            var publicAlias = (string)data["publicAlias"];
+                            if (!string.IsNullOrEmpty(publicAlias))
+                            {
+                                context.Identity.AddClaim(new Claim("publicAlias", publicAlias, ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer));
+                            }
+
+                            var emailAddress = (string)data["emailAddress"];
+                            if (!string.IsNullOrEmpty(emailAddress))
+                            {
+                                context.Identity.AddClaim(new Claim("emailAddress", emailAddress, ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer));
+                            }
+
+                            // var coreRevision = (int)data["coreRevision"];
+                            // context.Identity.AddClaim(new Claim("coreRevision", coreRevision.ToString(), ClaimValueTypes.Integer,
+                            //     context.Options.ClaimsIssuer));
+
+                            // var timestamp = (string)data["timestamp"];
+                            // if (!string.IsNullOrEmpty(timestamp))
+                            // {
+                            //     context.Identity.AddClaim(new Claim("timestamp", timestamp, ClaimValueTypes.String,
+                            //         context.Options.ClaimsIssuer));
+                            // }
+
+                            // var révision = (string)data["révision"];
+                            //context.Identity.AddClaim(new Claim("révision", révision, ClaimValueTypes.Integer,
+                            //    context.Options.ClaimsIssuer));
+
+                        }
+                     };
                 })
                 .AddGitHub(options =>
                 {
